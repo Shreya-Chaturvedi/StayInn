@@ -1,18 +1,61 @@
 <style>
-  .search-btn i {
-    display: inline;
-    margin-right: 0.5rem;
+  body.dark-mode {
+    background-color: #000;
+    color: white;
   }
 
-  .search-btn,
-  .search-input {
-    border-radius: 25px;
-    padding: 0.5 3rem 0.5 3rem;
-    font-size: 1rem;
+  body.dark-mode input,
+  body.dark-mode .form-control {
+    background-color: #222;
+    color: white;
+    border: 1px solid #444;
+  }
+
+  body.dark-mode .card {
+    background-color: #1e1e1e;
+    color: white;
+    border: 1px solid #333;
+  }
+
+  body.dark-mode .filter {
+    color: white;
+  }
+
+  body.dark-mode .filter p {
+    color: white;
+  }
+
+  body.dark-mode footer {
+    background-color: #1f1f1f;
+    color: white;
+  }
+
+  body.dark-mode .form-check-label,
+  body.dark-mode .tax-toggle label {
+    color: white;
+  }
+
+  .navbar {
+    background-color: #fff; /* default light mode */
+    z-index: 1030; /* upar rahe */
+  }
+
+  body.dark-mode .navbar {
+    background-color: #1e1e1e; /* dark mode ke liye */
+  }
+
+  .navbar-collapse {
+    background-color: inherit; /* navbar ka background hi use kare */
+    padding: 0.5rem 1rem;
+  }
+
+  .navbar-nav .nav-link {
+    display: block;
+    padding: 0.5rem 1rem;
   }
 </style>
 
-<nav class="navbar navbar-expand-md bg-body-light sticky-top">
+<nav class="navbar navbar-expand-md sticky-top">
   <div class="container-fluid">
     <a class="navbar-brand" href="/listings"
       ><i class="fa-regular fa-compass"></i
@@ -30,18 +73,14 @@
         <a class="nav-link" href="/listings">Explore</a>
       </div>
 
-      <div class="navbar-nav ms-auto">
-        <form class="d-flex" action="/listings/search" method="post">
-          <input
-            class="form-control me-2 search-input"
-            type="search"
-            name="query"
-            placeholder="Search destinations"
-          />
-          <button class="btn search-btn btn-outline-danger" type="submit">
-            <i class="fa-solid fa-magnifying-glass"></i>Search
-          </button>
-        </form>
+      <div class="form-check form-switch ms-3">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          role="switch"
+          id="themeSwitch"
+        />
+        <label class="form-check-label" for="themeSwitch">Dark</label>
       </div>
 
       <div class="navbar-nav ms-auto">
@@ -50,9 +89,47 @@
         <a class="nav-link" href="/signup"><b>Sign Up</b></a>
         <a class="nav-link" href="/login"><b>Login</b></a>
         <% } %> <% if(currUser) { %>
+        <a class="nav-link" href="/listings/my-listings">My Listings</a>
         <a class="nav-link" href="/logout"><b>Logout</b></a>
         <% } %>
       </div>
     </div>
   </div>
 </nav>
+
+<script>
+  const themeSwitch = document.getElementById("themeSwitch");
+  const body = document.body;
+  const navbar = document.querySelector(".navbar");
+
+  // Load theme on page load
+  window.onload = () => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+      themeSwitch.checked = true;
+      applyDarkMode();
+    }
+  };
+
+  function applyDarkMode() {
+    body.classList.add("dark-mode");
+    body.classList.remove("light-mode");
+    navbar.classList.add("dark-mode");
+  }
+
+  function applyLightMode() {
+    body.classList.add("light-mode");
+    body.classList.remove("dark-mode");
+    navbar.classList.remove("dark-mode");
+  }
+
+  themeSwitch.addEventListener("change", function () {
+    if (this.checked) {
+      applyDarkMode();
+      localStorage.setItem("theme", "dark");
+    } else {
+      applyLightMode();
+      localStorage.setItem("theme", "light");
+    }
+  });
+</script>

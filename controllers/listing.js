@@ -4,8 +4,14 @@ const mapToken = process.env.MAP_TOKEN;
 const geocodingClient = mbxGeocoding({ accessToken: mapToken });
 
 module.exports.index = async (req, res) => {
-  const allListings = await Listing.find({});
-  res.render("listings/index.ejs", { allListings });
+  const { category } = req.query;
+  let query = {};
+
+  if (category) {
+    query.category = category;
+  }
+  const allListings = await Listing.find(query);
+  res.render("listings/index.ejs", { allListings, category });
 };
 
 module.exports.renderNewform = (req, res) => {
@@ -37,7 +43,7 @@ module.exports.createListing = async (req, res, next) => {
   const newListing = new Listing(req.body.listing);
   newListing.owner = req.user._id;
   newListing.image = { url, filename };
-  newListing.geometry = response.body.features[0].geometry;
+  // newListing.geometry = response.body.features[0].geometry;
   let savedListing = await newListing.save();
   console.log(savedListing);
   req.flash("success", "New Listing Created!");
@@ -86,10 +92,55 @@ module.exports.searchListings = async (req, res) => {
     searchFilters.$or = [
       { title: { $regex: query, $options: "i" } },
       { location: { $regex: query, $options: "i" } },
-      { country: { $regex: query, $options: "i" } }
+      { country: { $regex: query, $options: "i" } },
     ];
   }
 
   const searchResults = await Listing.find(searchFilters);
   res.render("listings/search.ejs", { searchResults, query });
+};
+
+module.exports.myListings = async (req, res) => {
+  const listings = await Listing.find({ owner: req.user._id }).populate({
+    path: "reviews",
+    populate: { path: "author" },
+  });
+
+  let positive = 0,
+    negative = 0,
+    neutral = 0;
+
+  // Optional: Calculate overall sentiment per listing
+  const listingsWithSentiment = listings.map((listing) => {
+    let pos = 0,
+      neg = 0,
+      neu = 0;
+
+    listing.reviews.forEach((r) => {
+      if (r.sentiment === "Positive") {
+        pos++;
+        positive++;
+      } else if (r.sentiment === "Negative") {
+        neg++;
+        negative++;
+      } else {
+        neu++;
+        neutral++;
+      }
+    });
+
+    let overall = "Neutral";
+    if (pos > neg && pos > neu) overall = "Mostly Positive";
+    else if (neg > pos && neg > neu) overall = "Mostly Negative";
+
+    return { listing, overall };
+  });
+
+  // 👇 Ab global counts bhi bhej do EJS ko
+  res.render("listings/myListings", {
+    listingsWithSentiment,
+    positive,
+    negative,
+    neutral,
+  });
 };

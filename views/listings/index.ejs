@@ -1,52 +1,81 @@
 <% layout("layouts/boilerplate") -%>
-<link rel="stylesheet" href="css/filter.css">
+
+<style>
+  .search {
+    justify-content: center;
+  }
+
+  .search-btn i {
+    display: inline;
+    margin-right: 0.5rem;
+  }
+
+  .search-btn,
+  .search-input {
+    border-radius: 25px;
+    padding: 0.5 3rem 0.5 3rem;
+    font-size: 1rem;
+  }
+</style>
+
+<link rel="stylesheet" href="css/filter.css" />
+
+<div class="row row-cols-lg-2 row-cols-md-2 row-cols-sm-1 mt-3 search">
+  <form class="d-flex" action="/listings/search" method="post">
+    <input
+      class="form-control me-2 search-input"
+      type="search"
+      name="query"
+      placeholder="Search destinations"
+    />
+    <button class="btn search-btn btn-outline-danger" type="submit">
+      <i class="fa-solid fa-magnifying-glass"></i>Search
+    </button>
+  </form>
+</div>
 
 <div id="filters">
-  <div class="filter">
+  <div class="filter <%= category === 'mountains' ? 'active' : '' %>" data-category="trending">
     <div><i class="fa-solid fa-fire"></i></div>
     <p>Trending</p>
   </div>
-  <div class="filter">
+  <div class="filter" data-category="rooms">
     <div><i class="fa-solid fa-bed"></i></div>
     <p>Rooms</p>
   </div>
-  <div class="filter">
+  <div class="filter" data-category="cities">
     <div><i class="fa-solid fa-mountain-city"></i></div>
     <p>Iconic Cities</p>
   </div>
-  <div class="filter">
+  <div class="filter" data-category="mountains">
     <div><i class="fa-solid fa-mountain"></i></div>
     <p>Mountains</p>
   </div>
-  <div class="filter">
+  <div class="filter" data-category="castles">
     <div><i class="fa-brands fa-fort-awesome"></i></div>
     <p>Castles</p>
   </div>
-  <div class="filter">
+  <div class="filter" data-category="pools">
     <div><i class="fa-solid fa-person-swimming"></i></div>
     <p>Pools</p>
   </div>
-  <div class="filter">
-    <div><i class="fa-solid fa-bed"></i></div>
-    <p>Rooms</p>
-  </div>
-  <div class="filter">
+  <div class="filter" data-category="camping">
     <div><i class="fa-solid fa-campground"></i></div>
     <p>Camping</p>
   </div>
-  <div class="filter">
+  <div class="filter" data-category="farms">
     <div><i class="fa-solid fa-cow"></i></div>
     <p>Farms</p>
   </div>
-  <div class="filter">
+  <div class="filter" data-category="arctic">
     <div><i class="fa-regular fa-snowflake"></i></div>
     <p>Arctic</p>
   </div>
-  <div class="filter">
+  <div class="filter" data-category="domes">
     <div><i class="fa-solid fa-igloo"></i></div>
     <p>Domes</p>
   </div>
-  <div class="filter">
+  <div class="filter" data-category="boats">
     <div><i class="fa-solid fa-ship"></i></div>
     <p>Boats</p>
   </div>
@@ -80,7 +109,14 @@
       <div class="card-body">
         <p class="card-text">
           <b><%= listing.title %></b><br />
-          &#8377; <%= listing.price.toLocaleString("en-IN") %>/night
+          &#8377;
+          <span
+            class="price"
+            data-base="<%= listing.price %>"
+            data-total="<%= (listing.price * 1.18).toFixed(0) %>"
+          >
+            <%= listing.price.toLocaleString("en-IN") %> </span
+          >/night
           <i class="tax-info">&nbsp; &nbsp;+18% GST</i>
         </p>
       </div>
@@ -90,21 +126,42 @@
 </div>
 
 <script>
-  let taxSwitch = document.getElementById("flexSwitchCheckDefault");
-  taxSwitch.addEventListener("click", () => {
-    let taxInfo = document.getElementsByClassName("tax-info");
-    for (info of taxInfo) {
-      if (info.style.display != "inline") {
-        info.style.display = "inline";
-      } else {
-        info.style.display = "none";
+  document.addEventListener("DOMContentLoaded", function () {
+    let taxSwitch = document.getElementById("flexSwitchCheckDefault");
+    let taxInfos = document.getElementsByClassName("tax-info");
+    let priceSpans = document.getElementsByClassName("price");
+
+    taxSwitch.addEventListener("click", () => {
+      for (let i = 0; i < priceSpans.length; i++) {
+        let span = priceSpans[i];
+        let taxInfo = taxInfos[i];
+        let base = Number(span.dataset.base);
+        let total = Number(span.dataset.total);
+
+        if (taxSwitch.checked) {
+          // Show total price, hide GST info
+          span.textContent = total.toLocaleString("en-IN");
+          taxInfo.style.display = "none";
+        } else {
+          // Show base price + GST info
+          span.textContent = base.toLocaleString("en-IN");
+          taxInfo.style.display = "inline";
+        }
       }
-    }
+    });
   });
 
+  document.querySelectorAll('.filter').forEach(filter => {
+    filter.addEventListener('click', () => {
+      const category = filter.getAttribute('data-category');
+      // Redirect to listings page with query param
+      window.location.href = `/listings?category=${category}`;
+    });
+  });
+  
   // document.querySelectorAll('.filter').forEach(filter => {
   //   filter.addEventListener('click', () => {
-  //     const category = 
+  //     const category =
   //   })
   // })
 </script>

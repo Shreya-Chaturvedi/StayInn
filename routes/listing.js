@@ -5,41 +5,37 @@ const Listing = require("../models/listing.js");
 const { isLoggedIn, isOwner, validateListing } = require("../middleware.js");
 const listingController = require("../controllers/listing.js");
 const multer = require("multer");
-const {storage} = require("../cloudConfig.js");
+const { storage } = require("../cloudConfig.js");
 const upload = multer({ storage });
 
 router.post("/search", listingController.searchListings); // ✅ POST route added
 router.get("/search", listingController.searchListings); // ✅ Optional GET route (for direct URL search)
+router.get("/my-listings", isLoggedIn, wrapAsync(listingController.myListings));
 
 router
-.route("/")
-.get(wrapAsync(listingController.index))
-.post(
-  isLoggedIn,
-  upload.single("listing[image]"),
-  validateListing,
-  wrapAsync(listingController.createListing)
-);
-
+  .route("/")
+  .get(wrapAsync(listingController.index))
+  .post(
+    isLoggedIn,
+    upload.single("listing[image]"),
+    validateListing,
+    wrapAsync(listingController.createListing)
+  );
 
 //New Route
 router.get("/new", isLoggedIn, listingController.renderNewform);
 
 router
-.route("/:id")
-.get(wrapAsync(listingController.showListing))
-.put(
-  isLoggedIn,
-  isOwner,
-  upload.single("listing[image]"),
-  validateListing,
-  wrapAsync(listingController.updateListing)
-)
-.delete(
-  isLoggedIn,
-  isOwner,
-  wrapAsync(listingController.destroyListing)
-);
+  .route("/:id")
+  .get(wrapAsync(listingController.showListing))
+  .put(
+    isLoggedIn,
+    isOwner,
+    upload.single("listing[image]"),
+    validateListing,
+    wrapAsync(listingController.updateListing)
+  )
+  .delete(isLoggedIn, isOwner, wrapAsync(listingController.destroyListing));
 
 //edit route
 router.get(

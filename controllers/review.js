@@ -1,21 +1,31 @@
 const Review = require("../models/review.js");
 const Listing = require("../models/listing.js");
+const Sentiment = require("sentiment");
+
+const sentiment = new Sentiment();
 
 module.exports.createReview = async (req, res) => {
-    let listing = await Listing.findById(req.params.id);
-    let newReview = new Review(req.body.review);
-    newReview.author = req.user._id;
-    listing.reviews.push(newReview);
-    await newReview.save();
-    await listing.save();
-    req.flash("success", "Review Added!");
-    res.redirect(`/listings/${listing._id}`);
-  }
+  let listing = await Listing.findById(req.params.id);
+  let newReview = new Review(req.body.review);
+  newReview.author = req.user._id;
 
-  module.exports.destroyReview = async (req, res) => {
-    let { id, reviewId } = req.params;
-    await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
-    await Review.findByIdAndDelete(reviewId);
-    req.flash("success", "Review Deleted!");
-    res.redirect(`/listings/${id}`);
-  }
+  const result = sentiment.analyze(newReview.comment);
+
+  if (newReview.rating >= 4) newReview.sentiment = "Positive";
+  else if (newReview.rating <= 2) newReview.sentiment = "Negative";
+  else newReview.sentiment = "Neutral";
+
+  listing.reviews.push(newReview);
+  await newReview.save();
+  await listing.save();
+  req.flash("success", "Review Added!");
+  res.redirect(`/listings/${listing._id}`);
+};
+
+module.exports.destroyReview = async (req, res) => {
+  let { id, reviewId } = req.params;
+  await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
+  await Review.findByIdAndDelete(reviewId);
+  req.flash("success", "Review Deleted!");
+  res.redirect(`/listings/${id}`);
+};

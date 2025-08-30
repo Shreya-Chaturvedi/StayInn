@@ -16,7 +16,10 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
     />
     <link rel="stylesheet" href="/css/rating.css" />
-    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css">
+    <link
+      rel="stylesheet"
+      href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css"
+    />
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl-js"></script>
   </head>
   <body>
@@ -30,7 +33,54 @@
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
-    ></script>
+    >
+      const themeSwitch = document.getElementById("themeSwitch");
+      const body = document.body;
+      const navbar = document.querySelector(".navbar");
+      const footer = document.querySelector("footer");
+
+      function applyDarkMode() {
+        body.classList.add("dark-mode");
+        body.classList.remove("light-mode");
+        navbar?.classList.add("dark-mode");
+        body.classList.add("dark-mode");
+        document.querySelectorAll(".card, .filter").forEach(el =>
+          el.classList.add("dark-mode")
+        );
+      }
+
+      function applyLightMode() {
+        body.classList.remove("dark-mode");
+        body.classList.add("light-mode");
+        navbar?.classList.remove("dark-mode");
+        body.classList.remove("dark-mode");
+        document.querySelectorAll(".card, .filter").forEach(el =>
+          el.classList.remove("dark-mode")
+        );
+      }
+
+      // On page load
+      window.addEventListener("DOMContentLoaded", () => {
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme === "dark") {
+          themeSwitch?.setAttribute("checked", true);
+          applyDarkMode();
+        } else {
+          applyLightMode();
+        }
+      });
+
+      // On toggle
+      themeSwitch?.addEventListener("change", function () {
+        if (this.checked) {
+          localStorage.setItem("theme", "dark");
+          applyDarkMode();
+        } else {
+          localStorage.setItem("theme", "light");
+          applyLightMode();
+        }
+      });
+    </script>
     <script src="/js/script.js"></script>
   </body>
 </html>

@@ -6,7 +6,6 @@ const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const path = require("path");
-const MONGO_URL = "mongodb://127.0.0.1:27017/StayInn";
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError.js");
@@ -28,7 +27,7 @@ main()
   });
 
 async function main() {
-  await mongoose.connect(MONGO_URL);
+  await mongoose.connect(process.env.MONGO_URL);
 }
 
 app.set("view engine", "ejs");
@@ -46,8 +45,8 @@ const sessionOptions = {
     expires: Date.now() + 7 * 24 * 60 * 1000,
     maxAge: 7 * 24 * 60 * 1000,
     httpOnly: true,
-  }
-}
+  },
+};
 
 // app.get("/", (req, res) => {
 //   res.send("Hi, i am root!");
@@ -66,7 +65,7 @@ app.use((req, res, next) => {
   res.locals.error = req.flash("error");
   res.locals.currUser = req.user;
   next();
-})
+});
 
 // app.get("/demouser", async (req, res) => {
 //   let fakeUser = new User({
@@ -90,6 +89,8 @@ app.use((err, req, res, next) => {
   res.status(statusCode).render("error.ejs", { message });
   // res.status(statusCode).send(message);
 });
+
+const PORT = process.env.PORT || 3000;
 
 app.listen(8080, () => {
   console.log("Server is running on port 8080");
